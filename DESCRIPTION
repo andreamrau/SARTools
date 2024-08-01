@@ -1,7 +1,7 @@
 Package: SARTools
 Type: Package
 Title: Statistical Analysis of RNA-Seq Tools
-Version: 1.8.1
+Version: 1.9.1
 Date: 2022-03-23
 Author: Marie-Agnes Dillies and Hugo Varet
 Maintainer: Hugo Varet <hugo.varet@pasteur.fr>
@@ -11,7 +11,8 @@ Depends: R (>= 3.3.0),
 	edgeR (>= 3.34.0),
 	ggplot2 (>= 3.3.0),
 	kableExtra
-Imports: genefilter (>= 1.44.0),
+Imports: csaw,
+  genefilter (>= 1.44.0),
 	GGally,
 	ggrepel,
 	ggdendro,
@@ -34,4 +35,4 @@ VignetteBuilder: knitr, rmarkdown
 Encoding: latin1
 Description: Provide R tools and an environment for the statistical analysis of RNA-Seq projects: load and clean data, produce figures, perform statistical analysis/testing with DESeq2 or edgeR, export results and create final report.
 License: GPL-2
-RoxygenNote: 7.1.2
+RoxygenNote: 7.3.2

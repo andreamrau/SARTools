@@ -20,7 +20,8 @@ checkParameters.DESeq2(
   pAdjustMethod,
   typeTrans,
   locfunc,
-  colors
+  colors,
+  typeNorm
 )
 }
 \arguments{
@@ -55,6 +56,8 @@ checkParameters.DESeq2(
 \item{locfunc}{"median" (default) or "shorth" to estimate the size factors}
 
 \item{colors}{vector of colors of each biological condition on the plots}
+
+\item{typeNorm}{normalization for differential analysis: "DESeq2" (RNA-seq) or "loess" (ATAC-seq)}
 }
 \value{
 A boolean indicating if there is a problem in the parameters

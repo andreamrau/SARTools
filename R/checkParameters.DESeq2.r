@@ -20,13 +20,14 @@
 #' @param typeTrans transformation for PCA/clustering: "VST" ou "rlog"
 #' @param locfunc "median" (default) or "shorth" to estimate the size factors
 #' @param colors vector of colors of each biological condition on the plots
+#' @param typeNorm normalization for differential analysis: "DESeq2" (RNA-seq) or "loess" (ATAC-seq)
 #' @return A boolean indicating if there is a problem in the parameters
 #' @author Hugo Varet
 
 checkParameters.DESeq2 <- function(projectName,author,targetFile,rawDir,
                                    featuresToRemove,varInt,condRef,batch,fitType,
                                    cooksCutoff,independentFiltering,alpha,pAdjustMethod,
-                                   typeTrans,locfunc,colors){
+                                   typeTrans,locfunc,colors,typeNorm){
   problem <- FALSE
   if (!is.character(projectName) | length(projectName)!=1){
     message("projectName must be a character vector of length 1")
@@ -99,6 +100,15 @@ checkParameters.DESeq2 <- function(projectName,author,targetFile,rawDir,
   if (!is.vector(colors) || !all(areColors(colors))){
     message("colors must be a vector of colors")
     problem <- TRUE
+  }
+  if (!is.character(typeNorm) | length(typeNorm)!=1 || !I(typeNorm %in% c("DESeq2","loess"))){
+    message("typeNorm must be equal to 'DESeq2' or 'loess'")
+    problem <- TRUE
+  } else{
+    if (typeNorm=="loess" & !I("csaw" %in% installed.packages()[,"Package"])){
+      message("Package csaw is needed if using typeNorm='loess'")
+      problem <- TRUE
+    }
   }
   
   if (!problem){

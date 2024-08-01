@@ -12,23 +12,58 @@
 #' @param cooksCutoff outliers detection threshold (TRUE to let DESeq2 choosing it or FALSE to disable the outliers detection)
 #' @param independentFiltering \code{TRUE} or \code{FALSE} to perform the independent filtering or not
 #' @param alpha significance threshold to apply to the adjusted p-values
+#' @param typeNorm normalization for differential analysis: "DESeq2" (RNA-seq) or "loess" (ATAC-seq)
 #' @param ... optional arguments to be passed to \code{nbinomWaldTest()}
 #' @return A list containing the \code{dds} object (\code{DESeqDataSet} class), the \code{results} objects (\code{DESeqResults} class) and the vector of size factors
 #' @author Hugo Varet
 
 run.DESeq2 <- function(counts, target, varInt, batch=NULL,
                        locfunc="median", fitType="parametric", pAdjustMethod="BH",
-                       cooksCutoff=TRUE, independentFiltering=TRUE, alpha=0.05, ...){
+                       cooksCutoff=TRUE, independentFiltering=TRUE, 
+                       alpha=0.05, typeNorm="DESeq2", ...){
   # building dds object
   dds <- DESeqDataSetFromMatrix(countData=counts, colData=target, 
                                 design=formula(paste("~", ifelse(!is.null(batch), paste(batch,"+"), ""), varInt)))
   cat("Design of the statistical model:\n")
   cat(paste(as.character(design(dds)), collapse=" "),"\n")					  
   
-  # normalization
-  dds <- estimateSizeFactors(dds,locfunc=eval(as.name(locfunc)))
-  cat("\nNormalization factors:\n")
-  print(sizeFactors(dds))
+  # normalization: DESeq2 (default) or loess (for ATAC-seq)
+  if(typeNorm == "DESeq2") {
+    dds <- estimateSizeFactors(dds,locfunc=eval(as.name(locfunc)))
+    cat("\nNormalization factors:\n")
+    print(sizeFactors(dds))
+  } else {
+    
+    ## Alternative not making use of edgeR objects
+    # offsets <- attr(normOffsets(counts), "offset")
+    # offsets <- scaleOffset(counts, offsets)
+    # offsets <- offsets / exp(rowMeans(log(offsets)))
+    # libs <- colSums(counts)
+    # nf   <- libs/mean(libs)
+    # nfs  <- matrix(nf, nrow(offsets), ncol(offsets), byrow=TRUE)
+    # offsets <- offsets * nfs
+
+    ## calculate non-linear normalization offsets via loess fit
+    se <- SummarizedExperiment(list(counts=counts))
+    se$totals <- colSums(counts)
+    offsets <- normOffsets(se, se.out=FALSE)
+    ## next, following the procedure in DiffBind::pv.offsetsAdjust
+    ##   ensure offsets scale is consistent with library sizes
+    offsets <- SummarizedExperiment(list(offsets=offsets))
+    offsets <- assay(offsets, "offsets")
+    eobj <- DGEList(counts, lib.size=rep(mean(colSums(counts)),
+                                                ncol(offsets)))
+    offsets <- scaleOffset(eobj, offset=offsets)$offset
+    ##   ensure row-wise geometric means = 1
+    offsets <- offsets / exp(rowMeans(log(offsets)))
+    ##   normalized to library size
+    libs <- colSums(counts)
+    nf <- libs / mean(libs)
+    nfs <- matrix(nf, nrow(offsets), ncol(offsets), byrow=TRUE)
+    offsets <- offsets * nfs
+    ## finally, set normalization factors to these corrected offsets
+    normalizationFactors(dds) <- offsets
+  }
   
   # estimating dispersions
   dds <- estimateDispersions(dds, fitType=fitType)

@@ -1,8 +1,8 @@
 ################################################################################
 ### R script to compare several conditions with the SARTools and DESeq2 packages
-### Hugo Varet
-### March 23rd, 2022
-### designed to be executed with SARTools 1.8.1
+### Hugo Varet and Andrea Rau
+### 1 August 2024
+### designed to be executed with SARTools 1.9.1
 ################################################################################
 
 ################################################################################
@@ -33,6 +33,7 @@ pAdjustMethod <- "BH"                                # p-value adjustment method
 
 typeTrans <- "VST"                                   # transformation for PCA/clustering: "VST" or "rlog"
 locfunc <- "median"                                  # "median" (default) or "shorth" to estimate the size factors
+typeNorm <- "loess"                                  # "DESeq2" (default) or "loess" for ATAC-seq data
 
 colors <- c("#f3c300", "#875692", "#f38400",         # vector of colors of each biological condition on the plots
             "#a1caf1", "#be0032", "#c2b280",
@@ -53,7 +54,7 @@ checkParameters.DESeq2(projectName=projectName,author=author,targetFile=targetFi
                        rawDir=rawDir,featuresToRemove=featuresToRemove,varInt=varInt,
                        condRef=condRef,batch=batch,fitType=fitType,cooksCutoff=cooksCutoff,
                        independentFiltering=independentFiltering,alpha=alpha,pAdjustMethod=pAdjustMethod,
-                       typeTrans=typeTrans,locfunc=locfunc,colors=colors)
+                       typeTrans=typeTrans,locfunc=locfunc,colors=colors,typeNorm=typeNorm)
 
 # loading target file
 target <- loadTargetFile(targetFile=targetFile, varInt=varInt, condRef=condRef, batch=batch)
@@ -67,7 +68,8 @@ majSequences <- descriptionPlots(counts=counts, group=target[,varInt], col=color
 # analysis with DESeq2
 out.DESeq2 <- run.DESeq2(counts=counts, target=target, varInt=varInt, batch=batch,
                          locfunc=locfunc, fitType=fitType, pAdjustMethod=pAdjustMethod,
-                         cooksCutoff=cooksCutoff, independentFiltering=independentFiltering, alpha=alpha)
+                         cooksCutoff=cooksCutoff, independentFiltering=independentFiltering, 
+                         alpha=alpha,typeNorm=typeNorm)
 
 # PCA + clustering
 exploreCounts(object=out.DESeq2$dds, group=target[,varInt], typeTrans=typeTrans, col=colors)

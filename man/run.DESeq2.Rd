@@ -15,6 +15,7 @@ run.DESeq2(
   cooksCutoff = TRUE,
   independentFiltering = TRUE,
   alpha = 0.05,
+  typeNorm = "DESeq2",
   ...
 )
 }
@@ -38,6 +39,8 @@ run.DESeq2(
 \item{independentFiltering}{\code{TRUE} or \code{FALSE} to perform the independent filtering or not}
 
 \item{alpha}{significance threshold to apply to the adjusted p-values}
+
+\item{typeNorm}{normalization for differential analysis: "DESeq2" (RNA-seq) or "loess" (ATAC-seq)}
 
 \item{...}{optional arguments to be passed to \code{nbinomWaldTest()}}
 }
