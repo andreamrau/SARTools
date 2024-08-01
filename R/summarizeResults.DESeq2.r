@@ -25,8 +25,10 @@ summarizeResults.DESeq2 <- function(out.DESeq2, group, independentFiltering=TRUE
   results <- out.DESeq2$results
   
   # diagnostic of the size factors
-  diagSizeFactorsPlots(dds=dds, group=group, col=col, ggplot_theme=ggplot_theme)
-  
+  if(!is.null(dds$sf)) {
+    diagSizeFactorsPlots(dds=dds, group=group, col=col, ggplot_theme=ggplot_theme)
+  }
+
   # boxplots before and after normalisation
   countsBoxplots(dds, group=group, col=col, ggplot_theme=ggplot_theme)
   
